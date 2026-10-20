@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Генератор названий смазок</title>
+<style>
+:root{--bg:#f2f0ec;--sf:#fff;--tx:#1d1f22;--mu:#6b6f76;--ac:#d9541e;--bd:#d8d4cc;--ok:#2f7d4f;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17191c;--sf:#212428;--tx:#ecebe8;--mu:#9a9ea5;--ac:#ff7a3d;--bd:#33373d;--ok:#5fc08a;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#17191c;--sf:#212428;--tx:#ecebe8;--mu:#9a9ea5;--ac:#ff7a3d;--bd:#33373d;--ok:#5fc08a;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--tx);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+.w{max-width:960px;margin:0 auto;padding:20px 16px 48px}
+h1{font:900 28px/1.1 "Arial Black",Impact,system-ui,sans-serif;letter-spacing:.02em;margin:0 0 4px;text-transform:uppercase}
+.sub{color:var(--mu);margin:0 0 20px}
+.card{background:var(--sf);border:1px solid var(--bd);border-radius:10px;padding:16px;margin-bottom:16px}
+.out{border-left:6px solid var(--ac)}
+.name{font:900 clamp(22px,5.4vw,40px)/1.1 "Arial Black",Impact,system-ui,sans-serif;letter-spacing:.02em;word-break:break-word;margin:0 0 8px}
+.desc{margin:0 0 12px;font-size:17px}
+.note{color:var(--mu);font-size:13px;margin:8px 0 0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+label{display:block;font-size:12px;color:var(--mu);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+select,input[type=text]{width:100%;padding:9px 10px;font:inherit;background:var(--bg);color:var(--tx);border:1px solid var(--bd);border-radius:6px}
+select:disabled{opacity:.45}
+.chk{display:flex;align-items:center;gap:8px;padding:9px 0;font-size:15px}
+.chk input{width:18px;height:18px;accent-color:var(--ac)}
+.chk.off{opacity:.45}
+button{font:inherit;cursor:pointer;border-radius:6px;border:1px solid var(--bd);background:var(--bg);color:var(--tx);padding:8px 14px}
+button.p{background:var(--ac);border-color:var(--ac);color:#fff;font-weight:700}
+.row{display:flex;flex-wrap:wrap;gap:8px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.chip{font-size:13px;padding:5px 10px}
+h2{font-size:15px;text-transform:uppercase;letter-spacing:.06em;margin:0 0 10px}
+.pl{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:8px}
+.pl button{text-align:left;padding:8px 10px;font-weight:700;font-size:14px}
+.fav{display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid var(--bd);font-size:14px}
+.fav b{display:block}.fav span{color:var(--mu)}
+.fav button{padding:2px 8px;align-self:flex-start}
+.ok{color:var(--ok)}
+</style>
+</head>
+<body>
+<div class="w">
+<h1>Генератор названий смазок</h1>
+<p class="sub">Собирает полное коммерческое название и краткое описание по логике «бренд + линейка + свойство + консистенция».</p>
+
+<div class="card out">
+<p class="name" id="nm"></p>
+<p class="desc" id="ds"></p>
+<div class="row">
+<button class="p" id="cp">Копировать название</button>
+<button id="cd">Копировать с описанием</button>
+<button id="fv">★ В список</button>
+<button id="sh">🎲 Случайный вариант</button>
+</div>
+<p class="note">Название — коммерческое. Температурные пределы, состав и свойства подтверждаются технической документацией конкретного продукта; юридическая доступность названий проверяется отдельно.</p>
+</div>
+
+<div class="card">
+<div class="grid">
+<div>
+<label for="br">Бренд</label>
+<input type="text" id="br" value="RUDA" maxlength="20">
+<div class="chips" id="bc"></div>
+</div>
+<div><label for="ty">Тип смазки</label><select id="ty"></select></div>
+<div><label for="wd">Название линейки</label><select id="wd"></select><input type="text" id="cw" maxlength="20" placeholder="или впишите своё, например FROST" style="margin-top:6px"></div>
+<div><label for="nl" id="nll">Консистенция NLGI</label><select id="nl"></select></div>
+</div>
+<div class="grid" style="margin-top:8px">
+<div>
+<label class="chk" id="pl0"><input type="checkbox" id="po"> POLAR — низкие температуры</label>
+<select id="pw"></select>
+</div>
+<div><label class="chk" id="sy0"><input type="checkbox" id="sy"> SYN — синтетическая основа</label></div>
+<div><label for="mo">Молибден (MoS₂)</label><select id="mo"><option value="0">Без молибдена</option><option value="1">MOLY</option><option value="5">MOLY 5 (5% MoS₂)</option></select></div>
+<div><label class="chk" id="ep0"><input type="checkbox" id="ep" checked> EP — противозадирные свойства</label></div>
+</div>
+<p class="note">Слово линейки (ROCK, CORE и т. д.) остаётся всегда. POLAR, SYN и MOLY добавляются после него по порядку: линейка → POLAR → SYN → MOLY → EP/NLGI. Пример: CORE EP 2 — обычная, CORE POLAR EP 2 — та же, но низкотемпературная.</p>
+</div>
+
+<div class="card">
+<h2>Весь ассортимент из брифа</h2>
+<div class="pl" id="ps"></div>
+</div>
+
+<div class="card">
+<h2>Мой список</h2>
+<div id="fl"><p class="note">Пока пусто. Нажмите «★ В список», чтобы собрать удачные варианты.</p></div>
+<div class="row" style="margin-top:10px"><button id="ca">Копировать весь список</button></div>
+</div>
+</div>
+
+<script>
+(function(){
+var HOT=['GORN','THERMO','PYRO','FORGE'];
+var T={
+ lica:{n:'Литиево-кальциевая смазка',w:['ROCK','GORA','STONE','HEAVY']},
+ licx:{n:'Литий-комплексная смазка',w:['CORE','PIT','SHAFT','BENCH']},
+ bn:{n:'Высокотемпературная бентонитовая смазка',w:HOT,t:'BN'},
+ cs:{n:'Высокотемпературная смазка на основе сульфоната кальция',w:HOT,t:'CS'},
+ ur:{n:'Высокотемпературная полимочевинная смазка',w:HOT,t:'UR'},
+ ogl:{n:'Смазка для открытых зубчатых передач экскаваторов, перегружателей, дробилок и мельниц',w:['GEAR','MILL','CRUSH'],t:'OGL'},
+ ptfe:{n:'Смазка с PTFE для направляющих, тросов и скользящих поверхностей',w:['GUIDE','SLIDE','GLIDE'],t:'PTFE'},
+ cg:{n:'Медно-графитовая смазка для гидромолотов и тяжелонагруженных узлов',w:['HAMMER','BREAKER','STRIKE'],t:'CG'}
+};
+var TL={lica:'Литиево-кальциевая EP',licx:'Литий-комплексная EP',bn:'Высокотемпературная, бентонит (BN)',cs:'Высокотемпературная, сульфонат кальция (CS)',ur:'Высокотемпературная, полимочевина (UR)',ogl:'Открытые зубчатые передачи (OGL)',ptfe:'С PTFE',cg:'Медно-графитовая (CG)'};
+var PW=['POLAR','ARCTIC','FROST','TUNDRA'];
+var BR=['RUDA','RUDAR','GORA','KOPI'];
+var NL=['000','00','0','1','2','3'], OG=['500','1000','2500'];
+var $=function(i){return document.getElementById(i)};
+var S={b:'RUDA',t:'lica',w:'ROCK',po:false,pw:'POLAR',sy:false,mo:0,ep:true,n:'2'};
+var favs=[];
+
+function fill(sel,arr,val,lab){sel.innerHTML='';arr.forEach(function(a,i){var o=document.createElement('option');o.value=a;o.textContent=lab?lab[i]:a;sel.appendChild(o)});sel.value=val}
+
+function build(s){
+ var t=T[s.t],lm=(s.t==='lica'||s.t==='licx'),parts=[(s.b||'').trim().toUpperCase()],line=t.w[0],tags=[];
+ line=((s.cw||'').trim().toUpperCase())||(t.w.indexOf(s.w)>-1?s.w:t.w[0]);
+ var po=lm&&s.po,sy=lm&&s.sy,mo=lm?+s.mo:0;
+ if(lm){
+  if(po){tags.push(s.pw)}
+  if(sy){tags.push('SYN')}
+  if(mo){tags.push(mo===5?'MOLY 5':'MOLY')}
+ } else if(t.t){tags.push(t.t)}
+ parts.push(line);tags.forEach(function(x){parts.push(x)});
+ var ogl=s.t==='ogl',ep=ogl?false:s.ep;
+ if(ogl)parts.push(s.n);else parts.push(ep?'EP '+s.n:'NLGI '+s.n);
+ var d=t.n;
+ if(po)d+=' для низких температур';
+ if(sy)d+=' на синтетической основе';
+ if(mo)d+=' с добавлением дисульфида молибдена'+(mo===5?' (MoS₂ 5%)':' (MoS₂)');
+ if(ep)d+=', с противозадирными (EP) свойствами';
+ d+=ogl?', марка OGL '+s.n:' и вязкостью по NLGI '+s.n;
+ return{name:parts.filter(Boolean).join(' '),desc:d.charAt(0).toUpperCase()+d.slice(1)+'.'};
+}
+
+function sync(){
+ var lm=(S.t==='lica'||S.t==='licx'),ogl=S.t==='ogl';
+ fill($('wd'),T[S.t].w,T[S.t].w.indexOf(S.w)>-1?S.w:T[S.t].w[0]);S.w=$('wd').value;
+ var list=ogl?OG:NL;if(list.indexOf(S.n)<0)S.n=ogl?'2500':'2';
+ fill($('nl'),list,S.n);$('nll').textContent=ogl?'Марка OGL':'Консистенция NLGI';
+ ['po','sy'].forEach(function(k){$(k).disabled=!lm;$(k==='po'?'pl0':'sy0').className='chk'+(lm?'':' off')});
+ $('pw').disabled=!(lm&&S.po);$('mo').disabled=!lm;
+ $('ep').disabled=ogl;$('ep0').className='chk'+(ogl?' off':'');
+ if($('cw').value!==(S.cw||''))$('cw').value=S.cw||'';
+ $('po').checked=S.po;$('sy').checked=S.sy;$('mo').value=S.mo;$('ep').checked=ogl?false:S.ep;$('pw').value=S.pw;
+ var r=build(S);$('nm').textContent=r.name;$('ds').textContent=r.desc;
+}
+
+function init(){
+ fill($('ty'),Object.keys(T),S.t,Object.keys(T).map(function(k){return TL[k]}));
+ fill($('pw'),PW,S.pw);
+ BR.forEach(function(b){var c=document.createElement('button');c.className='chip';c.textContent=b;c.onclick=function(){S.b=b;$('br').value=b;sync();pre()};$('bc').appendChild(c)});
+ $('br').oninput=function(){S.b=this.value;sync();pre()};
+ $('ty').onchange=function(){S.t=this.value;S.w=T[S.t].w[0];sync()};
+ $('wd').onchange=function(){S.w=this.value;S.cw='';sync()};
+ $('cw').oninput=function(){S.cw=this.value;sync()};
+ $('nl').onchange=function(){S.n=this.value;sync()};
+ $('po').onchange=function(){S.po=this.checked;sync()};
+ $('pw').onchange=function(){S.pw=this.value;sync()};
+ $('sy').onchange=function(){S.sy=this.checked;sync()};
+ $('mo').onchange=function(){S.mo=+this.value;sync()};
+ $('ep').onchange=function(){S.ep=this.checked;sync()};
+ $('sh').onclick=function(){
+  var k=Object.keys(T),r=function(a){return a[Math.floor(Math.random()*a.length)]};
+  S.t=r(k);S.w=r(T[S.t].w);S.po=Math.random()<.4;S.pw=r(PW);S.sy=Math.random()<.3;S.mo=r([0,0,1,5]);S.ep=true;S.n=S.t==='ogl'?r(OG):r(['2','2','1','0','00']);sync()};
+ $('cp').onclick=function(){cpy(build(S).name,this)};
+ $('cd').onclick=function(){var r=build(S);cpy(r.name+' — '+r.desc,this)};
+ $('fv').onclick=function(){var r=build(S);if(!favs.some(function(f){return f.name===r.name}))favs.push(r);list()};
+ $('ca').onclick=function(){cpy(favs.map(function(f){return f.name+' — '+f.desc}).join('\n'),this)};
+ pre();sync();
+}
+
+var P=[['lica',0,0,0,1,'2'],['licx',0,0,0,1,'2'],['lica',0,0,1,1,'2'],['lica',0,0,5,1,'2'],['lica',1,0,0,1,'2'],['lica',1,0,5,1,'2'],['lica',0,1,0,1,'2'],['lica',1,1,5,1,'2'],['bn',0,0,0,1,'2'],['cs',0,0,0,1,'2'],['ur',0,0,0,1,'2'],['ogl',0,0,0,0,'500'],['ogl',0,0,0,0,'1000'],['ogl',0,0,0,0,'2500'],['ptfe',0,0,0,1,'2'],['cg',0,0,0,1,'2']];
+function pre(){
+ $('ps').innerHTML='';
+ P.forEach(function(p){
+  var s={b:S.b,t:p[0],w:T[p[0]].w[0],po:!!p[1],pw:'POLAR',sy:!!p[2],mo:p[3],ep:!!p[4],n:p[5]};
+  var r=build(s),b=document.createElement('button');b.textContent=r.name;b.title=r.desc;
+  b.onclick=function(){var b0=S.b;S=s;S.b=b0;$('ty').value=S.t;sync();window.scrollTo({top:0,behavior:'smooth'})};
+  $('ps').appendChild(b)});
+}
+
+function list(){
+ var el=$('fl');if(!favs.length){return}
+ el.innerHTML='';
+ favs.forEach(function(f,i){
+  var d=document.createElement('div');d.className='fav';
+  d.innerHTML='<div><b></b><span></span></div>';
+  d.querySelector('b').textContent=f.name;d.querySelector('span').textContent=f.desc;
+  var x=document.createElement('button');x.textContent='✕';x.onclick=function(){favs.splice(i,1);if(!favs.length)el.innerHTML='<p class="note">Пока пусто.</p>';else list()};
+  d.appendChild(x);el.appendChild(d)});
+}
+
+function cpy(txt,btn){
+ var old=btn.textContent;
+ function done(){btn.textContent='Скопировано ✓';btn.classList.add('ok');setTimeout(function(){btn.textContent=old;btn.classList.remove('ok')},1400)}
+ try{navigator.clipboard.writeText(txt).then(done,fb)}catch(e){fb()}
+ function fb(){try{var a=document.createElement('textarea');a.value=txt;document.body.appendChild(a);a.select();document.execCommand('copy');a.remove();done()}catch(e){}}
+}
+init();
+})();
+</script>
+</body>
+</html>
